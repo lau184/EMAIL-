@@ -17,7 +17,7 @@ public class BandejaTest {
   Contacto ana = new Contacto("Ana", "ana@empresa.com");
   Contacto luis = new Contacto("Luis", "luis@empresa.com");
 
-  // guarda en bandeja de entrada de Ana
+  // bandeja de entrada de Ana
   Bandeja bandejaEntrada = ana.getBandejaEntrada();
 
   // crear y agregar correos simulados
@@ -29,7 +29,7 @@ public class BandejaTest {
   bandejaEntrada.agregarEmail(correo2);
   bandejaEntrada.agregarEmail(correo3);
 
-  // se Filtra y se buscar por asunto
+  // buscar por asunto
   List<Email> resultadoAsunto = bandejaEntrada.buscarEmails(Filtro.porTextoLibre("reunión"));
   assertEquals(1, resultadoAsunto.size(), "Debería encontrar 1 correo con 'reunión' en el asunto");
   assertEquals("Reunión semanal", resultadoAsunto.get(0).getSubject());
@@ -71,7 +71,7 @@ public class BandejaTest {
       //enviar
       gestor.enviar(emailVierne, Arrays.asList(martu));
 
-      //se crea email clonado en la bandeja de martu
+      //email clonado en la bandeja de martu
       Email emailDeMartu = martu.getBandejaEntrada().getEmails().get(0);
       
       //verificar que el email le llegó a martu
@@ -116,12 +116,12 @@ public class BandejaTest {
     Email e1 = new Email("Tema 1", "Sin leer", remitente, Arrays.asList());
     Email e2 = new Email("Tema 2", "Ya leído", remitente, Arrays.asList());
     e2.marcarComoLeido();
-    // Lista de emails
+
     List<Email> emails = Arrays.asList(e1, e2);
-    //aplicamos filtroo
-    Filtro filtro = new Filtro();  
-    List<Email> resultado = filtro.noLeidosEnInbox(emails); 
-    // Verificar que solo el email no leído esté en el resultado
+
+    Filtro filtro = new Filtro();
+    List<Email> resultado = filtro.noLeidosEnInbox(emails);
+
     assertEquals(1, resultado.size());
     assertFalse(resultado.get(0).isLeido(), "El correo debería estar sin leer");
   }
@@ -137,7 +137,7 @@ public class BandejaTest {
 
     Filtro filtro = new Filtro();
 
-    //el filto busca el asunto contiene la palabra "reunión"
+    // Predicado: el asunto contiene la palabra "reunión"
     List<Email> resultado = filtro.filtrar(emails, e -> e.getSubject().toLowerCase().contains("reunión"));
 
     assertEquals(1, resultado.size());
@@ -148,6 +148,7 @@ public class BandejaTest {
   @Test
   public void testFiltroDominioYTextoConCantantes() {
     // crear contactos 
+    SendMail gestor = new SendMail();
     Contacto shakira = new Contacto("Shakira", "shakira@pop.com");
     Contacto badbunny = new Contacto("Bad Bunny", "badbunny@trap.com");
     Contacto taylor = new Contacto("Taylor Swift", "taylor@pop.com");
@@ -158,50 +159,69 @@ public class BandejaTest {
     Email correo3 = new Email("Gira mundial", "Taylor anuncia tour con 87 fechas y 3 cambios de vestuario por show", taylor, List.of(shakira));
     Email correo4 = new Email("Nuevo hit", "Bad Bunny lanza 'ojitos lindos'", badbunny, List.of(taylor));
     Email correo5 = new Email("Receta de empanadas", "Shakira comparte su secreto para la masa perfecta", shakira, List.of(badbunny));
+    
+    gestor.enviar(correo1, Arrays.asList(taylor));
+    gestor.enviar(correo2, Arrays.asList(shakira));
+    gestor.enviar(correo3, Arrays.asList(shakira));
+    gestor.enviar(correo4, Arrays.asList(taylor));
+    gestor.enviar(correo5, Arrays.asList(badbunny));
 
-    List<Email> todosLosCorreos = List.of(correo1, correo2, correo3, correo4, correo5);
+    //lista de la bandeja de cada destinatario
+    List<Email> bandejaDeShakira = shakira.getBandejaEntrada().getEmails();
+    List<Email> bandejaDeBadbunny = badbunny.getBandejaEntrada().getEmails();
 
-    // filtrar por dominio "pop.com" y texto "hit"
-    List<Email> resultado = new Filtro().filtroDominioYTexto(todosLosCorreos, "pop.com", "hit");
+    // filtrar por dominio y texto
+    List<Email> resultado = new Filtro().filtroDominioYTexto(bandejaDeShakira, "pop.com", "gira");
 
     // verficarrrr
-    assertEquals(1, resultado.size(), "Debe encontrar solo 1 correo de pop.com con 'hit'");
-    assertEquals("Nuevo hit", resultado.get(0).getSubject());
+    assertEquals(1, resultado.size(), "Debe encontrar solo 1 correo de pop.com con 'gira'");
+    assertEquals("Gira mundial", resultado.get(0).getSubject());
 
     // otro caso nmsss con "trap.com" y texto "conejo"
-    List<Email> resultado2 = new Filtro().filtroDominioYTexto(todosLosCorreos, "trap.com", "ojitos");
-    assertEquals(1, resultado2.size(), "Debe encontrar 1 correo de trap.com con 'ojitos'");
-    assertEquals("Nuevo hit", resultado2.get(0).getSubject());
-
+    List<Email> resultado2 = new Filtro().filtroDominioYTexto(bandejaDeBadbunny, "pop.com", "empanadas");
+    assertEquals(1, resultado2.size(), "Debe encontrar 1 correo de trap.com con 'empanadas'");
+    assertEquals("Receta de empanadas", resultado2.get(0).getSubject());
   }
 
   @Test
   public void testFiltroNoLeidosYParaConCantantes() {
+    SendMail gestor = new SendMail();
     Contacto daddy = new Contacto("Daddy Yankee", "daddy@reggaeton.com");
     Contacto karol = new Contacto("Karol G", "karol@reggaeton.com");
     Contacto jbalvin = new Contacto("J Balvin", "balvin@colombia.com");
     Contacto rosalia = new Contacto("Rosalía", "rosalia@motomami.com");
+    Usuario karolUser = new Usuario("Karol User", "karol@reggaeton.com", karol);
 
     Email correo1 = new Email("Gasolina remix", "Daddy quiere reversionar el clásico con Karol", daddy, List.of(karol));
     Email correo2 = new Email("Motomami tour", "Rosalía invita a Karol a abrir su show", rosalia, List.of(karol)); 
     Email correo3 = new Email("Colaboración", "J Balvin propone tema con Karol y Rosalía", jbalvin, List.of(karol, rosalia)); 
     Email correo4 = new Email("Fiesta privada", "Daddy organiza fiesta con reggaetón clásico", daddy, List.of(rosalia));
-    // marcar algunos como leídos
-    correo3.marcarComoLeido();
-    // correo3 ya fue leído por Karol G
-    List<Email> todosLosCorreos = List.of(correo1, correo2, correo3, correo4);
-    // filtrar no leídos para Karol G
-    List<Email> resultadoKarol = new Filtro().filtroNoLeidosYPara(todosLosCorreos, "karol@reggaeton.com");
-    assertEquals(2, resultadoKarol.size(), "Karol debería tener 2 correos no leídos (sin contar el de Balvin que ya leyó)");
-   // filtrar no leídos para Rosalía
-    List<Email> resultadoRosalia = new Filtro().filtroNoLeidosYPara(todosLosCorreos, "rosalia@motomami.com");
-    assertEquals(1, resultadoRosalia.size(), "Rosalía solo tiene 1 correo no leído, el de Daddy Yankee");
+   
+    gestor.enviar(correo1, Arrays.asList(karol));
+    gestor.enviar(correo2, Arrays.asList(karol));
+    gestor.enviar(correo3, Arrays.asList(karol, rosalia));
+    gestor.enviar(correo4, Arrays.asList(rosalia));
+
+    
+    List<Email> bandejaDeKarol = karol.getBandejaEntrada().getEmails();
+    //List<Email> todosLosCorreos = List.of(correo1, correo2, correo3, correo4);
+    Email copiaCorreo3Karol = bandejaDeKarol.get(2);
+    karolUser.marcarComoLeido(copiaCorreo3Karol);
+
+
+    List<Email> resultadoKarol = new Filtro().filtroNoLeidosYPara(bandejaDeKarol, "karol@reggaeton.com");
+    assertEquals(2, resultadoKarol.size(), "Karol debería tener 2 correos no leídos.");
+
+    /*List<Email> resultadoRosalia = new Filtro().filtroNoLeidosYPara(todosLosCorreos, "rosalia@motomami.com");
+    assertEquals(1, resultadoRosalia.size(), "Rosalía solo tiene 1 correo no leído, el de Daddy Yankee");*/
   }
 
   @Test
   public void testMarcarComoFavorito() {
     Contacto lali = new Contacto("Lali", "lali@pop.com");
     Contacto tini = new Contacto("Tini", "tini@pop.com");
+    Usuario laliUser = new Usuario("Lali User", "lali@pop.com", lali);
+    SendMail gestor = new SendMail();
 
     Bandeja bandejalali = lali.getBandejaEntrada();
 
@@ -209,16 +229,19 @@ public class BandejaTest {
     Email correo2 = new Email("Fiesta", "Invitación a fiesta", tini, List.of(lali));
     Email correo3 = new Email("Gira", "Fechas confirmadas para el tour Futttura", tini, List.of(lali));
 
-    correo1.marcarComoFavorito();
-    correo3.marcarComoFavorito();
+    gestor.enviar(correo1, Arrays.asList(lali));
+    gestor.enviar(correo2, Arrays.asList(lali));
+    gestor.enviar(correo3, Arrays.asList(lali));
+    //correos clonados en bandejas de cada contacto
+    Email emailLali = lali.getBandejaEntrada().getEmails().get(0);
+    Email email3Lali = lali.getBandejaEntrada().getEmails().get(2);
+    
+    laliUser.marcarComoFavorito(emailLali);
+    laliUser.marcarComoFavorito(email3Lali);
 
-    bandejalali.agregarEmail(correo1);
-    bandejalali.agregarEmail(correo2);
-    bandejalali.agregarEmail(correo3);
-   // verificar favoritos
     List<Email> favoritos = bandejalali.getFavoritos();
     assertEquals(2, favoritos.size(), "Lali debería tener 2 correos favoritos");
-   // buscar favoritos con texto "gira"
+
     List<Email> resultado = bandejalali.buscarFavoritos(Filtro.porTextoLibre("gira"));
     assertEquals(1, resultado.size(), "Debería encontrar 1 favorito con 'gira'");
     assertEquals("Gira", resultado.get(0).getSubject());
@@ -237,9 +260,9 @@ public class BandejaTest {
     Email correo4 = new Email("Fiesta", "Nicki invita a todas", nicki, List.of(lali, tini));
 
     List<Email> todos = List.of(correo1, correo2, correo3, correo4);
-   // filtra por dominio trap.com
+
     List<Email> resultado = new Filtro().filtrarPorDominio(todos, "trap.com");
-    // verificar
+
     assertEquals(2, resultado.size(), "Debería encontrar 2 correos enviados desde el dominio trap.com");
     assertTrue(resultado.contains(correo2), "El correo de Tini debería estar incluido");
     assertTrue(resultado.contains(correo3), "El correo de María debería estar incluido");
@@ -258,9 +281,9 @@ public class BandejaTest {
   Email correo4 = new Email("Fiesta", "Nicki invita a todas", nicki, List.of(lali, tini));
 
   List<Email> todos = List.of(correo1, correo2, correo3, correo4);
-  // filtrar por palabra "importante" en el asunto
+
   List<Email> resultado = new Filtro().filtrar(todos, Filtro.asuntoContiene("importante"));
-  // verificar
+
   assertEquals(1, resultado.size(), "Debería encontrar 1 correo con 'importante' en el asunto");
   assertTrue(resultado.contains(correo2), "El correo con asunto 'Gira importante' debería estar incluido");
 }

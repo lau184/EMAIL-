@@ -6,7 +6,6 @@ public class Usuario {
   private String nombre;
   private String email;
   private Contacto contacto; // Relación Usuario -> Contacto
-  private boolean leido;
 
   public Usuario(String nombre, String email, Contacto contacto) {
       this.nombre = nombre;
@@ -47,7 +46,10 @@ public class Usuario {
   public void marcarComoNoLeido(Email email) {
     email.marcarComoNoLeido();
   }
-  
+
+  public void marcarComoFavorito(Email email) {
+    email.marcarComoFavorito();
+  }
 
   // Usuario puede eliminar emails de su contacto asociado
   public void eliminarEmail(Email email) {
@@ -78,15 +80,17 @@ public class Usuario {
   }
   
   public void enviarBorrador(Email borrador, List<Contacto> recipients) {
-    borrador.marcarComoEnviado(); 
+    borrador.marcarComoEnviado();
     //volar el borrador 
     this.contacto.getBandejaBorradores().removerEmail(borrador);
     //destinatarios
     borrador.getRecipients().addAll(recipients);
-    
+
     //enviar
     SendMail gestor = new SendMail();
     gestor.enviar(borrador, recipients);
-}
+  }
+
+  
 
 }

@@ -16,17 +16,15 @@ public class EmailTest {
     Contacto remitente = new Contacto("Carlos", "carlos@empresa.com");
     Contacto meli = new Contacto("Meli", "meli@empresa.com");
     Contacto marto = new Contacto("Luis", "luis@empresa.com");
-
-    //Usuario meliUser = new Usuario("Meli", "meli@empresa.com", meli);
     Usuario martoUser = new Usuario("Luis", "luis@empresa.com", marto);
 
     //enviar el correo
     Email reunion = new Email("Reunión importante",
         "Mañana a las 10am", remitente, Arrays.asList(meli, marto));
-    //gestiona el envíos
+
     SendMail gestor = new SendMail();
     gestor.enviar(reunion, Arrays.asList(meli, marto));
-    //verif que llegó a las bandejas de entrada
+
     assertTrue(remitente.getBandejaSalida().getEmails().contains(reunion));
 
     //correos clonados en bandejas de cada contacto
