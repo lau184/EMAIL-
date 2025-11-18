@@ -25,7 +25,7 @@ public class ContactoTest {
     void testCrearContacto() {
         String nombre = "Tini Stoessel";
         String email = "tini.stoessel@email.com";
-        
+    
         Contacto contactoCompleto = new Contacto(nombre, email);
         
         assertNotNull(contactoCompleto);
@@ -75,7 +75,7 @@ public class ContactoTest {
 
     gestor.agregarContacto(Silvia);
     gestor.agregarContacto(Martu);
-
+    // Verificar que ambos contactos están en la lista
     assertEquals(2, gestor.size());
 
     // Verificar que se creó correctamente

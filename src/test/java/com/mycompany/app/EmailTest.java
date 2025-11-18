@@ -23,10 +23,10 @@ public class EmailTest {
     //enviar el correo
     Email reunion = new Email("Reunión importante",
         "Mañana a las 10am", remitente, Arrays.asList(meli, marto));
-
+    //gestiona el envíos
     SendMail gestor = new SendMail();
     gestor.enviar(reunion, Arrays.asList(meli, marto));
-
+    //verif que llegó a las bandejas de entrada
     assertTrue(remitente.getBandejaSalida().getEmails().contains(reunion));
 
     //correos clonados en bandejas de cada contacto

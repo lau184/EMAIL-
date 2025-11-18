@@ -31,7 +31,7 @@ public class UsuarioTest {
     //enviar el correo
     Email email = new Email("Reunión importante",
                             "Mañana a las 10am", remitente, Arrays.asList(anaContacto, luisContacto));
-    
+    //gestiona el envíos
     SendMail gestor = new SendMail();
     gestor.enviar(email, java.util.Arrays.asList(anaContacto, luisContacto));
 
@@ -93,7 +93,7 @@ public class UsuarioTest {
     //copia en bandeja de martu
     Email emailEnBandeja = martuContacto.getBandejaEntrada().getEmails().get(0);
 
-    //verificar estado inicial
+    //verificar estado inicial del email
     assertFalse(emailEnBandeja.isEliminado(), "Email inicialmente no debe estar eliminado");
     assertTrue(martuContacto.getBandejaEntrada().getEmails().contains(emailEnBandeja),
         "Email debe estar en la bandeja inicialmente");
